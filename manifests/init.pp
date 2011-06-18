@@ -77,6 +77,7 @@ class dashboard (
 
   file { "${dashboard::params::dashboard_root}/config/database.yml":
     ensure            => 'link',
+    target            => '/etc/puppet-dashboard/database.yml',
     mode              => '0755',
     owner             => $dashboard_user,
     group             => $dashboard_group,
