@@ -26,6 +26,8 @@ class dashboard::params {
       $dashboard_root         = '/usr/share/puppet-dashboard'
       $web_user               = 'apache'
       $web_group              = 'apache'
+      $mysql_package_provider = 'yum'
+      $ruby_mysql_package     = 'ruby-mysql'
     }
     'ubuntu', 'debian': {
       $dashboard_service      = 'puppet-dashboard'
@@ -33,6 +35,8 @@ class dashboard::params {
       $dashboard_root         = '/usr/share/puppet-dashboard'
       $web_user               = 'www'
       $web_group              = 'www'
+      $mysql_package_provider = 'aptitude'
+      $ruby_mysql_package     = 'libmysql-ruby1.8'
     }
     'freebsd': {
       $dashboard_service      = 'puppet-dashboard'
@@ -40,6 +44,8 @@ class dashboard::params {
       $dashboard_root         = '/usr/share/puppet-dashboard'
       $web_user               = 'www'
       $web_group              = 'www'
+      $mysql_package_provider = undef
+      $ruby_mysql_package     = 'ruby-mysql'
     }
     'darwin': {
       $dashboard_service      = 'puppet-dashboard'
@@ -47,6 +53,8 @@ class dashboard::params {
       $dashboard_root         = '/usr/share/puppet-dashboard'
       $web_user               = 'www'
       $web_group              = 'www'
+      $mysql_package_provider = undef
+      $ruby_mysql_package     = 'ruby-mysql'
     }
  }
 

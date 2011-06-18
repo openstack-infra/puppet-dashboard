@@ -58,7 +58,10 @@ class dashboard (
 
   class { 'mysql': }
   class { 'mysql::server': root_password     => "Ch@ngem3!" }
-  class { 'mysql::ruby': package_provider  => 'yum' }
+  class { 'mysql::ruby':
+    package_provider  => $dashboard::params::mysql_package_provider,
+    package_name      => $dashboard::params::ruby_mysql_package,
+  }
 
   package { $dashboard_package:
     ensure            => $dashboard_version_real,
