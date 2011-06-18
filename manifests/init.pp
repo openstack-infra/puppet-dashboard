@@ -128,6 +128,20 @@ class dashboard (
     charset           => $dashboard_charset,
   }
   
+  # The UID and GID are taken from the puppet-dashboard package,
+  # BUT they conflict on debian squeeze...so I added a zero.
+  user { 'puppet-dashboard':
+      uid             => '1001',
+      comment         => 'Puppet Dashboard',
+      gid             => '102',
+      ensure          => 'present',
+      shell           => '/sbin/nologin',
+  }
+
+  group { 'puppet-dashboard':
+      gid             => '1002',
+      ensure          => 'present',
+  }
 
   file { '/etc/default/puppet-dashboard':
     ensure            => present,
