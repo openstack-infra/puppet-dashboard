@@ -67,12 +67,22 @@ class dashboard (
     ensure            => $dashboard_version_real,
   }
 
-  file { "${dashboard::params::dashboard_root}/config/database.yml":
+  file {'/etc/puppet-dashboard/database.yml':
     ensure            => present,
-    content           => template('puppet/database.yml.erb'),
+    content           => template('dashboard/database.yml.erb'),
+    mode              => '0755',
+    owner             => $dashboard_user,
+    group             => $dashboard_group,
   }
 
-  file { [ "${dashboard::params::dashboard_root}/public", "${dashboard::params::dashboard_root}/public/stylesheets", "${dashboard::params::dashboard_root}/public/javascript" ]:
+  file { "${dashboard::params::dashboard_root}/config/database.yml":
+    ensure            => 'link',
+    mode              => '0755',
+    owner             => $dashboard_user,
+    group             => $dashboard_group,
+  }
+
+  file { [ "${dashboard::params::dashboard_root}/public", "${dashboard::params::dashboard_root}/public/stylesheets", "${dashboard::params::dashboard_root}/public/javascript", "${dashboard::params::dashboard_root}/tmp", '/etc/puppet-dashboard' ]:
     ensure            => directory,
     mode              => '0755',
     owner             => $dashboard_user,
@@ -100,7 +110,7 @@ class dashboard (
     ensure            => running,
     enable            => true,
     hasrestart        => true,
-    subscribe         => File["${dashboard::params::dashboard_root}/config/database.yml"],
+    subscribe         => File['/etc/puppet-dashboard/database.yml'],
   }
 
   exec { 'db-migrate':
@@ -116,13 +126,24 @@ class dashboard (
     charset           => $dashboard_charset,
   }
   
+
+  file { '/etc/default/puppet-dashboard':
+    ensure            => present,
+    content           => template('dashboard/puppet-dashboard.default.erb'),
+    owner             => 'root',
+    group             => 'root',
+    mode              => '0644',
+  }
+
   Class['mysql'] 
   -> Class['mysql::ruby'] 
   -> Class['mysql::server']
   -> Package[$dashboard_package]
+  -> File['/etc/puppet-dashboard/database.yml']
   -> File["${dashboard::params::dashboard_root}/config/database.yml"]
   -> File["${dashboard::params::dashboard_root}/log/production.log"]
   -> File['/etc/logrotate.d/puppet-dashboard']
+  -> File['/etc/default/puppet-dashboard']
   -> Mysql::DB["${dashboard_db_real}"]
   -> Exec['db-migrate']
   -> Service[$dashboard_service]
