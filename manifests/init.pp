@@ -106,7 +106,6 @@ class dashboard (
   exec { 'db-migrate':
     command           => "rake RAILS_ENV=production db:migrate",
     cwd               => "${dashboard::params::dashboard_root}",
-    logoutput         => true,
     path              => "/usr/bin/:/usr/local/bin/",
     creates           => "/var/lib/mysql/${dashboard_db_real}/nodes.frm",
   }
