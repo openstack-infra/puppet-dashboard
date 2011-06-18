@@ -87,6 +87,8 @@ class dashboard (
     mode              => '0755',
     owner             => $dashboard_user,
     group             => $dashboard_group,
+    recurse           => true,
+    recurselimit      => '1',
     require           => Package[$dashboard_package],
     before            => Service['puppet-dashboard'],
   }
