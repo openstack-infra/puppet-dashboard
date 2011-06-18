@@ -134,7 +134,7 @@ class dashboard (
   user { 'puppet-dashboard':
       uid             => '1001',
       comment         => 'Puppet Dashboard',
-      gid             => '102',
+      gid             => '1002',
       ensure          => 'present',
       shell           => '/sbin/nologin',
   }
