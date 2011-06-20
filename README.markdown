@@ -16,6 +16,7 @@ To install the Puppet Dashboard and configure it with sane defaults, include the
 		    dashboard_password        => 'changeme',
 		    dashboard_db              => 'dashboard_db',
 		    dashboard_charset         => 'utf8',
+				mysql_root_pw							=> 'REALLY_change_me',
 		  }
 
 		}

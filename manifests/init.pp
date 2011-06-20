@@ -9,6 +9,7 @@
 #   [*dashbaord_password*]  - Password for the puppet-dashboard database user.
 #   [*dashboard_db*]        - The puppet-dashboard database name.
 #   [*dashboard_charset*]   - Character set for the puppet-dashboard database.
+#   [*mysql_root_pw*]       - Password for root on MySQL
 #
 # Actions:
 #   Install mysql, ruby-mysql, and mysql-server
@@ -39,6 +40,7 @@ class dashboard (
   $dashboard_password       = $dashboard::params::dashboard_password,
   $dashboard_db             = $dashboard::params::dashboard_db,
   $dashboard_charset        = $dashboard::params::dashboard_charset
+  $mysql_root_pw            = $dashboard::params::mysql_root_pw
 
 ) inherits dashboard::params {
 
@@ -49,15 +51,17 @@ class dashboard (
   validate_re($dashboard_password, $v_alphanum)
   validate_re($dashboard_db, $v_alphanum)
   validate_re($dashboard_charset, $v_alphanum)
+  validate_re($mysql_root_pw, $v_alphanum)
 
   $dashboard_ensure_real   = $dashboard_ensure
   $dashboard_user_real     = $dashboard_user
   $dashboard_password_real = $dashboard_password
   $dashboard_db_real       = $dashboard_db
   $dashboard_charset_real  = $dashboard_charset
+  $mysql_root_pw_real      = $mysql_root_pw
 
   class { 'mysql': }
-  class { 'mysql::server': root_password => "Ch@ngem3!" }
+  class { 'mysql::server': root_password => $mysql_root_pw_real }
   class { 'mysql::ruby':
     package_provider => $dashboard::params::mysql_package_provider,
     package_name     => $dashboard::params::ruby_mysql_package,

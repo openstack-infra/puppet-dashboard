@@ -6,6 +6,7 @@ node default {
     dashboard_password        => 'changeme',
     dashboard_db              => 'dashboard_production',
     dashboard_charset         => 'utf8'
+    mysql_root_pw             => 'REALLY_change_me',
   }
 
 }
