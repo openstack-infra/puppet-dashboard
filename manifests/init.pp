@@ -57,7 +57,7 @@ class dashboard (
   $dashboard_charset_real  = $dashboard_charset
 
   class { 'mysql': }
-  class { 'mysql::server': root_password     => "Ch@ngem3!" }
+  class { 'mysql::server': root_password => "Ch@ngem3!" }
   class { 'mysql::ruby':
     package_provider => $dashboard::params::mysql_package_provider,
     package_name     => $dashboard::params::ruby_mysql_package,
