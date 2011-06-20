@@ -133,8 +133,8 @@ class dashboard (
   }
 
   mysql::db { "${dashboard_db_real}":
-    password => $dashboard_password,
     user     => $dashboard_user_real,
+    password => $dashboard_password_real,
     charset  => $dashboard_charset_real,
   }
   
