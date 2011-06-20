@@ -12,7 +12,8 @@ To install the Puppet Dashboard and configure it with sane defaults, include the
 
 		  class {'dashboard':
 		    dashboard_ensure          => 'present',
-		    dashboard_user            => 'dashboard',
+		    dashboard_user            => 'puppet-dashboard',
+			  dashboard_group 					=> 'puppet-dashboard',
 		    dashboard_password        => 'changeme',
 		    dashboard_db              => 'dashboard_db',
 		    dashboard_charset         => 'utf8',

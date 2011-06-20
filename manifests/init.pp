@@ -5,7 +5,9 @@
 # Parameters:
 #   [*dashboard_ensure*]    - The value of the ensure parameter for the 
 #                               puppet-dashboard package.
-#   [*dashboard_user*]      - Name of the puppet-dashboard database user.
+#   [*dashboard_user*]      - Name of the puppet-dashboard database and 
+#                               system user.
+#   [*dashboard_group*]     - Name of the puppet-dashboard group.
 #   [*dashbaord_password*]  - Password for the puppet-dashboard database user.
 #   [*dashboard_db*]        - The puppet-dashboard database name.
 #   [*dashboard_charset*]   - Character set for the puppet-dashboard database.
@@ -37,6 +39,7 @@
 class dashboard (
   $dashboard_ensure         = $dashboard::params::dashboard_ensure,
   $dashboard_user           = $dashboard::params::dashboard_user,
+  $dashboard_group          = $dashboard::params::dashboard_group,
   $dashboard_password       = $dashboard::params::dashboard_password,
   $dashboard_db             = $dashboard::params::dashboard_db,
   $dashboard_charset        = $dashboard::params::dashboard_charset
@@ -48,6 +51,7 @@ class dashboard (
   $v_bool = [ '^true$', '^false$' ]
   validate_re($dashboard_ensure, $v_alphanum)
   validate_re($dashboard_user, $v_alphanum)
+  validate_re($dashboard_group, $v_alphanum)
   validate_re($dashboard_password, $v_alphanum)
   validate_re($dashboard_db, $v_alphanum)
   validate_re($dashboard_charset, $v_alphanum)
@@ -55,6 +59,7 @@ class dashboard (
 
   $dashboard_ensure_real   = $dashboard_ensure
   $dashboard_user_real     = $dashboard_user
+  $dashboard_group_real    = $dashboard_group
   $dashboard_password_real = $dashboard_password
   $dashboard_db_real       = $dashboard_db
   $dashboard_charset_real  = $dashboard_charset
@@ -75,23 +80,23 @@ class dashboard (
     ensure  => present,
     content => template('dashboard/database.yml.erb'),
     mode    => '0755',
-    owner   => $dashboard_user,
-    group   => $dashboard_group,
+    owner   => $dashboard_user_real,
+    group   => $dashboard_group_real,
   }
 
   file { "${dashboard::params::dashboard_root}/config/database.yml":
     ensure => 'link',
     target => '/etc/puppet-dashboard/database.yml',
     mode   => '0755',
-    owner  => $dashboard_user,
-    group  => $dashboard_group,
+    owner  => $dashboard_user_real,
+    group  => $dashboard_group_real,
   }
 
   file { [ "${dashboard::params::dashboard_root}/public", "${dashboard::params::dashboard_root}/public/stylesheets", "${dashboard::params::dashboard_root}/public/javascript", "${dashboard::params::dashboard_root}/tmp", '/etc/puppet-dashboard' ]:
     ensure       => directory,
     mode         => '0755',
-    owner        => $dashboard_user,
-    group        => $dashboard_group,
+    owner        => $dashboard_user_real,
+    group        => $dashboard_group_real,
     recurse      => true,
     recurselimit => '1',
     require      => Package[$dashboard_package],
@@ -101,8 +106,8 @@ class dashboard (
   file { "${dashboard::params::dashboard_root}/log/production.log":
     ensure => file,
     mode   => '0644',
-    owner  => $dashboard_user,
-    group  => $dashboard_group,
+    owner  => $dashboard_user_real,
+    group  => $dashboard_group_real,
   }
   
   file { '/etc/logrotate.d/puppet-dashboard':
@@ -128,9 +133,9 @@ class dashboard (
   }
 
   mysql::db { "${dashboard_db_real}":
-    user     => $dashboard_user,
     password => $dashboard_password,
     charset  => $dashboard_charset,
+    user     => $dashboard_user_real,
   }
   
   # The UID and GID are taken from the puppet-dashboard package,
