@@ -27,3 +27,4 @@ To install the Puppet Dashboard and configure it with sane defaults, include the
 * Include the ability to run Puppet Dashboard under Passenger.
 * Sqlite support.
 * Integration with Puppet module to set puppet.conf settings.
+* Remove the need to set the MySQL root password (needs fixed in the mysql module)
