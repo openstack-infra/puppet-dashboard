@@ -138,18 +138,18 @@ class dashboard (
     charset  => $dashboard_charset_real,
   }
   
-  # The UID and GID are taken from the puppet-dashboard package,
-  # BUT they conflict on debian squeeze...so I added a zero.
-  user { 'puppet-dashboard':
-      uid     => '1001',
-      comment => 'Puppet Dashboard',
-      gid     => '1002',
-      ensure  => 'present',
-      shell   => '/sbin/nologin',
+  # The Debian package did not include users. I ensure them here without
+  #  specifying a UID or GID.
+  user { $dashboard_user_real:
+      comment    => 'Puppet Dashboard',
+      gid        => "${dashboard_group_real}",
+      ensure     => 'present',
+      shell      => '/sbin/nologin',
+      managehome => true,
+      home       => "/home/${dashboard_user_real}",
   }
 
-  group { 'puppet-dashboard':
-      gid    => '1002',
+  group { $dashboard_group_real:
       ensure => 'present',
   }
 
