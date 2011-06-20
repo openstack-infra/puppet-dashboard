@@ -153,12 +153,29 @@ class dashboard (
       ensure => 'present',
   }
 
-  file { '/etc/default/puppet-dashboard':
-    ensure  => present,
-    content => template('dashboard/puppet-dashboard.default.erb'),
-    owner   => 'root',
-    group   => 'root',
-    mode    => '0644',
+  case $operatingsystem {
+    centos,redhat,oel: {
+      file { '/etc/sysconfig/puppet-dashboard':
+        ensure  => present,
+        content => template('dashboard/puppet-dashboard-sysconfig'),
+        owner   => '0',
+        group   => '0',
+        mode    => '0644',
+        require => [ Package[$dashboard_package], User[$dashboard_user_real] ],
+        before  => Service[$dashboard_service],
+      }
+    }
+    debian,ubuntu: {
+      file { '/etc/default/puppet-dashboard':
+        ensure  => present,
+        content => template('dashboard/puppet-dashboard.default.erb'),
+        owner   => '0',
+        group   => '0',
+        mode    => '0644',
+        require => [ Package[$dashboard_package], User[$dashboard_user_real] ],
+        before  => Service[$dashboard_service],
+      }
+    }
   }
 
   Class['mysql'] 
@@ -169,7 +186,6 @@ class dashboard (
   -> File["${dashboard::params::dashboard_root}/config/database.yml"]
   -> File["${dashboard::params::dashboard_root}/log/production.log"]
   -> File['/etc/logrotate.d/puppet-dashboard']
-  -> File['/etc/default/puppet-dashboard']
   -> Mysql::DB["${dashboard_db_real}"]
   -> Exec['db-migrate']
   -> Service[$dashboard_service]
