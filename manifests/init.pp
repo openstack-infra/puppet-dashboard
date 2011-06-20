@@ -50,106 +50,106 @@ class dashboard (
   validate_re($dashboard_db, $v_alphanum)
   validate_re($dashboard_charset, $v_alphanum)
 
-  $dashboard_ensure_real        = $dashboard_ensure
-  $dashboard_user_real          = $dashboard_user
-  $dashboard_password_real      = $dashboard_password
-  $dashboard_db_real            = $dashboard_db
-  $dashboard_charset_real       = $dashboard_charset
+  $dashboard_ensure_real   = $dashboard_ensure
+  $dashboard_user_real     = $dashboard_user
+  $dashboard_password_real = $dashboard_password
+  $dashboard_db_real       = $dashboard_db
+  $dashboard_charset_real  = $dashboard_charset
 
   class { 'mysql': }
   class { 'mysql::server': root_password     => "Ch@ngem3!" }
   class { 'mysql::ruby':
-    package_provider  => $dashboard::params::mysql_package_provider,
-    package_name      => $dashboard::params::ruby_mysql_package,
+    package_provider => $dashboard::params::mysql_package_provider,
+    package_name     => $dashboard::params::ruby_mysql_package,
   }
 
   package { $dashboard_package:
-    ensure            => $dashboard_version_real,
+    ensure => $dashboard_version_real,
   }
 
   file {'/etc/puppet-dashboard/database.yml':
-    ensure            => present,
-    content           => template('dashboard/database.yml.erb'),
-    mode              => '0755',
-    owner             => $dashboard_user,
-    group             => $dashboard_group,
+    ensure  => present,
+    content => template('dashboard/database.yml.erb'),
+    mode    => '0755',
+    owner   => $dashboard_user,
+    group   => $dashboard_group,
   }
 
   file { "${dashboard::params::dashboard_root}/config/database.yml":
-    ensure            => 'link',
-    target            => '/etc/puppet-dashboard/database.yml',
-    mode              => '0755',
-    owner             => $dashboard_user,
-    group             => $dashboard_group,
+    ensure => 'link',
+    target => '/etc/puppet-dashboard/database.yml',
+    mode   => '0755',
+    owner  => $dashboard_user,
+    group  => $dashboard_group,
   }
 
   file { [ "${dashboard::params::dashboard_root}/public", "${dashboard::params::dashboard_root}/public/stylesheets", "${dashboard::params::dashboard_root}/public/javascript", "${dashboard::params::dashboard_root}/tmp", '/etc/puppet-dashboard' ]:
-    ensure            => directory,
-    mode              => '0755',
-    owner             => $dashboard_user,
-    group             => $dashboard_group,
-    recurse           => true,
-    recurselimit      => '1',
-    require           => Package[$dashboard_package],
-    before            => Service['puppet-dashboard'],
+    ensure       => directory,
+    mode         => '0755',
+    owner        => $dashboard_user,
+    group        => $dashboard_group,
+    recurse      => true,
+    recurselimit => '1',
+    require      => Package[$dashboard_package],
+    before       => Service['puppet-dashboard'],
   }
 
   file { "${dashboard::params::dashboard_root}/log/production.log":
-    ensure            => file,
-    mode              => '0644',
-    owner             => $dashboard_user,
-    group             => $dashboard_group,
+    ensure => file,
+    mode   => '0644',
+    owner  => $dashboard_user,
+    group  => $dashboard_group,
   }
   
   file { '/etc/logrotate.d/puppet-dashboard':
-    ensure            => present,
-    content           => template('puppet/puppet-dashboard.logrotate.erb'),
-    owner             => 'root',
-    group             => 'root',
-    mode              => '0644',
+    ensure  => present,
+    content => template('puppet/puppet-dashboard.logrotate.erb'),
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
   }
 
   service { $dashboard_service:
-    ensure            => running,
-    enable            => true,
-    hasrestart        => true,
-    subscribe         => File['/etc/puppet-dashboard/database.yml'],
+    ensure     => running,
+    enable     => true,
+    hasrestart => true,
+    subscribe  => File['/etc/puppet-dashboard/database.yml'],
   }
 
   exec { 'db-migrate':
-    command           => "rake RAILS_ENV=production db:migrate",
-    cwd               => "${dashboard::params::dashboard_root}",
-    path              => "/usr/bin/:/usr/local/bin/",
-    creates           => "/var/lib/mysql/${dashboard_db_real}/nodes.frm",
+    command => "rake RAILS_ENV=production db:migrate",
+    cwd     => "${dashboard::params::dashboard_root}",
+    path    => "/usr/bin/:/usr/local/bin/",
+    creates => "/var/lib/mysql/${dashboard_db_real}/nodes.frm",
   }
 
   mysql::db { "${dashboard_db_real}":
-    user              => $dashboard_user,
-    password          => $dashboard_password,
-    charset           => $dashboard_charset,
+    user     => $dashboard_user,
+    password => $dashboard_password,
+    charset  => $dashboard_charset,
   }
   
   # The UID and GID are taken from the puppet-dashboard package,
   # BUT they conflict on debian squeeze...so I added a zero.
   user { 'puppet-dashboard':
-      uid             => '1001',
-      comment         => 'Puppet Dashboard',
-      gid             => '1002',
-      ensure          => 'present',
-      shell           => '/sbin/nologin',
+      uid     => '1001',
+      comment => 'Puppet Dashboard',
+      gid     => '1002',
+      ensure  => 'present',
+      shell   => '/sbin/nologin',
   }
 
   group { 'puppet-dashboard':
-      gid             => '1002',
-      ensure          => 'present',
+      gid    => '1002',
+      ensure => 'present',
   }
 
   file { '/etc/default/puppet-dashboard':
-    ensure            => present,
-    content           => template('dashboard/puppet-dashboard.default.erb'),
-    owner             => 'root',
-    group             => 'root',
-    mode              => '0644',
+    ensure  => present,
+    content => template('dashboard/puppet-dashboard.default.erb'),
+    owner   => 'root',
+    group   => 'root',
+    mode    => '0644',
   }
 
   Class['mysql'] 
