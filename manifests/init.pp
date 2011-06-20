@@ -42,7 +42,7 @@ class dashboard (
   $dashboard_group          = $dashboard::params::dashboard_group,
   $dashboard_password       = $dashboard::params::dashboard_password,
   $dashboard_db             = $dashboard::params::dashboard_db,
-  $dashboard_charset        = $dashboard::params::dashboard_charset
+  $dashboard_charset        = $dashboard::params::dashboard_charset,
   $mysql_root_pw            = $dashboard::params::mysql_root_pw
 
 ) inherits dashboard::params {
@@ -134,8 +134,8 @@ class dashboard (
 
   mysql::db { "${dashboard_db_real}":
     password => $dashboard_password,
-    charset  => $dashboard_charset,
     user     => $dashboard_user_real,
+    charset  => $dashboard_charset_real,
   }
   
   # The UID and GID are taken from the puppet-dashboard package,

@@ -6,7 +6,7 @@ node default {
     dashboard_group           => 'puppet-dashboard',
     dashboard_password        => 'changeme',
     dashboard_db              => 'dashboard_production',
-    dashboard_charset         => 'utf8'
+    dashboard_charset         => 'utf8',
     mysql_root_pw             => 'REALLY_change_me',
   }
 
