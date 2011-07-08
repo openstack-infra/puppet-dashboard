@@ -17,10 +17,10 @@ class dashboard::passenger (
   $dashboard_port
 ) inherits dashboard {
 
-  Class ['passenger']
+  Class ['::passenger']
   -> Apache::Vhost[$dashboard_site]
 
-  class { 'passenger':
+  class { '::passenger':
      port    => $dashboard_port,
    }
 
