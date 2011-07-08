@@ -47,26 +47,8 @@ class dashboard (
 
 ) inherits dashboard::params {
 
-  $v_alphanum = '^[._0-9a-zA-Z:-]+$'
-  $v_bool = [ '^true$', '^false$' ]
-  validate_re($dashboard_ensure, $v_alphanum)
-  validate_re($dashboard_user, $v_alphanum)
-  validate_re($dashboard_group, $v_alphanum)
-  validate_re($dashboard_password, $v_alphanum)
-  validate_re($dashboard_db, $v_alphanum)
-  validate_re($dashboard_charset, $v_alphanum)
-  validate_re($mysql_root_pw, $v_alphanum)
-
-  $dashboard_ensure_real   = $dashboard_ensure
-  $dashboard_user_real     = $dashboard_user
-  $dashboard_group_real    = $dashboard_group
-  $dashboard_password_real = $dashboard_password
-  $dashboard_db_real       = $dashboard_db
-  $dashboard_charset_real  = $dashboard_charset
-  $mysql_root_pw_real      = $mysql_root_pw
-
   class { 'mysql': }
-  class { 'mysql::server': root_password => $mysql_root_pw_real }
+  class { 'mysql::server': root_password => $mysql_root_pw }
   class { 'mysql::ruby':
     package_provider => $dashboard::params::mysql_package_provider,
     package_name     => $dashboard::params::ruby_mysql_package,
@@ -132,30 +114,25 @@ class dashboard (
   }
 
   package { $dashboard_package:
-    ensure => $dashboard_version_real,
+    ensure => $dashboard_version,
+  }
   }
 
   file {'/etc/puppet-dashboard/database.yml':
     ensure  => present,
     content => template('dashboard/database.yml.erb'),
     mode    => '0755',
-    owner   => $dashboard_user_real,
-    group   => $dashboard_group_real,
   }
 
   file { "${dashboard::params::dashboard_root}/config/database.yml":
     ensure => 'link',
     target => '/etc/puppet-dashboard/database.yml',
     mode   => '0755',
-    owner  => $dashboard_user_real,
-    group  => $dashboard_group_real,
   }
 
   file { [ "${dashboard::params::dashboard_root}/public", "${dashboard::params::dashboard_root}/public/stylesheets", "${dashboard::params::dashboard_root}/public/javascript", "${dashboard::params::dashboard_root}/tmp", "${dashboard::params::dashboard_root}/log", '/etc/puppet-dashboard' ]:
     ensure       => directory,
     mode         => '0755',
-    owner        => $dashboard_user_real,
-    group        => $dashboard_group_real,
     recurse      => true,
     recurselimit => '1',
     require      => Package[$dashboard_package],
@@ -165,10 +142,8 @@ class dashboard (
   file { "${dashboard::params::dashboard_root}/log/production.log":
     ensure => file,
     mode   => '0644',
-    owner  => $dashboard_user_real,
-    group  => $dashboard_group_real,
   }
-  
+
   file { '/etc/logrotate.d/puppet-dashboard':
     ensure  => present,
     content => template('puppet/puppet-dashboard.logrotate.erb'),
@@ -178,30 +153,31 @@ class dashboard (
   }
 
   exec { 'db-migrate':
-    command => "rake RAILS_ENV=production db:migrate",
-    cwd     => "${dashboard::params::dashboard_root}",
-    path    => "/usr/bin/:/usr/local/bin/",
-    creates => "/var/lib/mysql/${dashboard_db_real}/nodes.frm",
+    command   => "rake RAILS_ENV=production db:migrate",
+    cwd       => "${dashboard::params::dashboard_root}",
+    path      => "/usr/bin/:/usr/local/bin/",
+    creates   => "/var/lib/mysql/${dashboard_db}/nodes.frm",
   }
 
-  mysql::db { "${dashboard_db_real}":
-    user     => $dashboard_user_real,
-    password => $dashboard_password_real,
-    charset  => $dashboard_charset_real,
+  mysql::db { "${dashboard_db}":
+    user     => $dashboard_user,
+    password => $dashboard_password,
+    charset  => $dashboard_charset,
   }
   
   # The Debian package did not include users. I ensure them here without
   #  specifying a UID or GID.
-  user { $dashboard_user_real:
+
+  user { $dashboard_user:
       comment    => 'Puppet Dashboard',
-      gid        => "${dashboard_group_real}",
+      gid        => "${dashboard_group}",
       ensure     => 'present',
       shell      => '/sbin/nologin',
       managehome => true,
-      home       => "/home/${dashboard_user_real}",
+      home       => "/home/${dashboard_user}",
   }
 
-  group { $dashboard_group_real:
+  group { $dashboard_group:
       ensure => 'present',
   }
 
