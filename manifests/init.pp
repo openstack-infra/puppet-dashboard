@@ -180,9 +180,6 @@ class dashboard (
     password => $dashboard_password,
     charset  => $dashboard_charset,
   }
-  
-  # The Debian package did not include users. I ensure them here without
-  #  specifying a UID or GID.
 
   user { $dashboard_user:
       comment    => 'Puppet Dashboard',
