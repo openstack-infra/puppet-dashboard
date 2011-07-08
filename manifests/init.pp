@@ -54,8 +54,12 @@ class dashboard (
   $dashboard_password       = $dashboard::params::dashboard_password,
   $dashboard_db             = $dashboard::params::dashboard_db,
   $dashboard_charset        = $dashboard::params::dashboard_charset,
-  $mysql_root_pw            = $dashboard::params::mysql_root_pw
-
+  $dashboard_site           = $dashboard::params::dashboard_site,
+  $dashboard_port           = $dashboard::params::dashboard_port,
+  $mysql_root_pw            = $dashboard::params::mysql_root_pw,
+  $passenger                = $dashboard::params::passenger,
+  $mysql_package_provider   = $dashboard::params::mysql_package_provider,
+  $ruby_mysql_package       = $dashboard::params::ruby_mysql_package
 ) inherits dashboard::params {
 
   class { 'mysql': }
