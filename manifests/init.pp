@@ -116,30 +116,31 @@ class dashboard (
   package { $dashboard_package:
     ensure => $dashboard_version,
   }
+
+  File {
+    require => Package[$dashboard_package],
+    mode    => '0755',
+    owner   => $dashboard_user,
+    group   => $dashboard_group,
+  }
+
+  file { [ "${dashboard::params::dashboard_root}/public", "${dashboard::params::dashboard_root}/tmp", "${dashboard::params::dashboard_root}/log", '/etc/puppet-dashboard' ]:
+    ensure       => directory,
+    recurse      => true,
+    recurselimit => '1',
   }
 
   file {'/etc/puppet-dashboard/database.yml':
     ensure  => present,
     content => template('dashboard/database.yml.erb'),
-    mode    => '0755',
   }
 
   file { "${dashboard::params::dashboard_root}/config/database.yml":
-    ensure => 'link',
+    ensure => 'symlink',
     target => '/etc/puppet-dashboard/database.yml',
-    mode   => '0755',
   }
 
-  file { [ "${dashboard::params::dashboard_root}/public", "${dashboard::params::dashboard_root}/public/stylesheets", "${dashboard::params::dashboard_root}/public/javascript", "${dashboard::params::dashboard_root}/tmp", "${dashboard::params::dashboard_root}/log", '/etc/puppet-dashboard' ]:
-    ensure       => directory,
-    mode         => '0755',
-    recurse      => true,
-    recurselimit => '1',
-    require      => Package[$dashboard_package],
-    before       => Service['puppet-dashboard'],
-  }
-
-  file { "${dashboard::params::dashboard_root}/log/production.log":
+  file { [ "${dashboard::params::dashboard_root}/log/production.log", "${dashboard::params::dashboard_root}/config/environment.rb" ]:
     ensure => file,
     mode   => '0644',
   }
