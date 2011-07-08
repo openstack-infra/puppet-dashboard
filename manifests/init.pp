@@ -72,6 +72,65 @@ class dashboard (
     package_name     => $dashboard::params::ruby_mysql_package,
   }
 
+  if $passenger {
+    Class['mysql']
+    -> Class['mysql::ruby']
+    -> Class['mysql::server']
+    -> Package[$dashboard_package]
+    -> Mysql::DB["${dashboard_db}"]
+    -> File["${dashboard::params::dashboard_root}/config/database.yml"]
+    -> Exec['db-migrate']
+    -> Class['dashboard::passenger']
+
+    class { 'dashboard::passenger':
+      dashboard_site => $dashboard_site,
+      dashboard_port => $dashboard_port,
+    }
+
+  } else {
+    Class['mysql']
+    -> Class['mysql::ruby']
+    -> Class['mysql::server']
+    -> Package[$dashboard_package]
+    -> Mysql::DB["${dashboard_db}"]
+    -> File["${dashboard::params::dashboard_root}/config/database.yml"]
+    -> Exec['db-migrate']
+    -> Service[$dashboard_service]
+
+    case $operatingsystem {
+      'centos','redhat','oel': {
+        file { '/etc/sysconfig/puppet-dashboard':
+          ensure  => present,
+          content => template('dashboard/puppet-dashboard-sysconfig'),
+          owner   => '0',
+          group   => '0',
+          mode    => '0644',
+          require => [ Package[$dashboard_package], User[$dashboard_user] ],
+          before  => Service[$dashboard_service],
+        }
+      }
+      'debian','ubuntu': {
+        file { '/etc/default/puppet-dashboard':
+          ensure  => present,
+          content => template('dashboard/puppet-dashboard.default.erb'),
+          owner   => '0',
+          group   => '0',
+          mode    => '0644',
+          require => [ Package[$dashboard_package], User[$dashboard_user] ],
+          before  => Service[$dashboard_service],
+        }
+      }
+    }
+
+    service { $dashboard_service:
+      ensure     => running,
+      enable     => true,
+      hasrestart => true,
+      subscribe  => File['/etc/puppet-dashboard/database.yml'],
+      require    => Exec['db-migrate']
+    }
+  }
+
   package { $dashboard_package:
     ensure => $dashboard_version_real,
   }
@@ -118,13 +177,6 @@ class dashboard (
     mode    => '0644',
   }
 
-  service { $dashboard_service:
-    ensure     => running,
-    enable     => true,
-    hasrestart => true,
-    subscribe  => File['/etc/puppet-dashboard/database.yml'],
-  }
-
   exec { 'db-migrate':
     command => "rake RAILS_ENV=production db:migrate",
     cwd     => "${dashboard::params::dashboard_root}",
@@ -153,41 +205,5 @@ class dashboard (
       ensure => 'present',
   }
 
-  case $operatingsystem {
-    centos,redhat,oel: {
-      file { '/etc/sysconfig/puppet-dashboard':
-        ensure  => present,
-        content => template('dashboard/puppet-dashboard-sysconfig'),
-        owner   => '0',
-        group   => '0',
-        mode    => '0644',
-        require => [ Package[$dashboard_package], User[$dashboard_user_real] ],
-        before  => Service[$dashboard_service],
-      }
-    }
-    debian,ubuntu: {
-      file { '/etc/default/puppet-dashboard':
-        ensure  => present,
-        content => template('dashboard/puppet-dashboard.default.erb'),
-        owner   => '0',
-        group   => '0',
-        mode    => '0644',
-        require => [ Package[$dashboard_package], User[$dashboard_user_real] ],
-        before  => Service[$dashboard_service],
-      }
-    }
-  }
-
-  Class['mysql'] 
-  -> Class['mysql::ruby'] 
-  -> Class['mysql::server']
-  -> Package[$dashboard_package]
-  -> File['/etc/puppet-dashboard/database.yml']
-  -> File["${dashboard::params::dashboard_root}/config/database.yml"]
-  -> File["${dashboard::params::dashboard_root}/log/production.log"]
-  -> File['/etc/logrotate.d/puppet-dashboard']
-  -> Mysql::DB["${dashboard_db_real}"]
-  -> Exec['db-migrate']
-  -> Service[$dashboard_service]
 }
 
