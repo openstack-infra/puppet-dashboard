@@ -2,7 +2,6 @@ require 'puppet'
 require 'puppet/network/http_pool'
 module Puppet::Dashboard
   class Classifier
-
     def self.connection(options)
       @connection ||= Puppet::Dashboard::Classifier.new(options, false)
     end
@@ -18,6 +17,16 @@ module Puppet::Dashboard
     def list(type, action)
       response = @http_connection.get("/#{type}.json", @headers )
       nodes = handle_json_response(response, action)
+    end
+
+    # find should return the data associated with 
+    def find
+
+    end
+
+    def create(type, action, data)
+      response = @http_connection.post("/#{type}.json", data.to_pson, @headers)
+      handle_json_response(response, action, '201')
     end
 
     def handle_json_response(response, action, expected_code='200')

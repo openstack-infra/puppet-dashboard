@@ -1,0 +1,7 @@
+to use this code, add the lib directory to your RUBYLIB:
+
+export RUBYLIB=`pwd`/lib:$RUBYLIB
+
+To learn more about this face, you can then run:
+
+puppet help dashboard
