@@ -57,6 +57,45 @@ Puppet::Face.define(:dashboard, '0.0.1') do
     end
   end
 
+  action 'register_module' do
+    description 'Imports classes from the puppet master into the dashboard'
+    option '--module-name=' do
+      description <<-EOT
+        Name of module to query classes from
+      EOT
+      default_to do
+        '*'
+      end
+    end
+    option '--environment=' do
+      description <<-EOT
+        Environment where modules should be introspected
+      EOT
+      default_to do
+        Puppet[:environment]
+      end
+    end
+    when_invoked do |options|
+      (Puppet::Face[:resource_type, :current].search(options[:module_name]) || []).collect do |resource_type|
+        # I am not going to bother checking that everything we find is loadable
+        # This patch assumes that the modules are properly organized
+        if resource_type.type == :hostclass
+          Puppet::Face[:dashboard, :current].create_class({:name => resource_type.name})
+          resource_type.name
+        else
+          nil
+        end
+      end.compact
+    end
+  end
+
+
+  action 'download_and_register_module' do
+    when_invoked do |options|
+      # do nothing
+    end
+  end
+
   # if you pass data, then this is not intended to be used from the command line
   # we should just parse a YAML file for this
   action 'create_group' do
