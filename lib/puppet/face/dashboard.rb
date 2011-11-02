@@ -67,15 +67,16 @@ Puppet::Face.define(:dashboard, '0.0.1') do
         '*'
       end
     end
-    option '--environment=' do
+    option '--modulepath=' do
       description <<-EOT
         Environment where modules should be introspected
       EOT
       default_to do
-        Puppet[:environment]
+        Puppet[:modulepath]
       end
     end
     when_invoked do |options|
+      Puppet[:modulepath] = options[:modulepath]
       (Puppet::Face[:resource_type, :current].search(options[:module_name]) || []).collect do |resource_type|
         # I am not going to bother checking that everything we find is loadable
         # This patch assumes that the modules are properly organized
@@ -90,9 +91,38 @@ Puppet::Face.define(:dashboard, '0.0.1') do
   end
 
 
-  action 'download_and_register_module' do
+  action 'add_module' do
+    description <<-EOT
+      Installs a list of modules and adds their classes to the Dashboard.
+    EOT
+    option '--modulepath=' do
+      default_to do
+        Puppet[:modulepath]
+      end
+    end
+    option '--module-name=' do
+      description <<-EOT
+        name of module from forge to download
+        should follow convention of account-module
+        This takes a list.
+      EOT
+      required
+    end
     when_invoked do |options|
-      # do nothing
+      Dir.chdir(options[:modulepath].split(':').first) do
+        options[:module_name].split(',').each do |module_name|
+          # install the module into the modulepath
+          `puppet module install #{module_name}`
+          author, puppet_module = module_name.split('-', 2)
+          override_hash = if puppet_module
+            {:module_name => puppet_module }
+          else
+            {:module_name => module_name }
+          end
+          Puppet::Face[:dashboard, :current].register_module(options.merge(override_hash))
+          # do nothing
+        end
+      end
     end
   end
 
