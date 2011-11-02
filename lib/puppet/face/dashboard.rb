@@ -73,10 +73,10 @@ Puppet::Face.define(:dashboard, '0.0.1') do
   # 422 - mssing group
   # 422 - mossing node
   action 'add_group_to_node' do
-    option '--node_name=' do
+    option '--node-name=' do
       required
     end
-    option '--group_name=' do
+    option '--group-name=' do
       required
     end
     when_invoked do |options|
