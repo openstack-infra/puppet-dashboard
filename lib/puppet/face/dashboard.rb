@@ -81,7 +81,7 @@ Puppet::Face.define(:dashboard, '0.0.1') do
         # I am not going to bother checking that everything we find is loadable
         # This patch assumes that the modules are properly organized
         if resource_type.type == :hostclass
-          Puppet::Face[:dashboard, :current].create_class({:name => resource_type.name})
+          Puppet::Face[:dashboard, :current].create_class({:name => resource_type.name, :enc_server => options[:enc_server], :enc_port => options[:enc_port]})
           resource_type.name
         else
           nil
