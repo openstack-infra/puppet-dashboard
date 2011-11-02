@@ -7,6 +7,7 @@ module Puppet::Dashboard
     end
 
     def initialize(options, use_ssl=false)
+      Puppet.info "Using http://#{options[:enc_server]}:#{options[:enc_port]} as Dashboard."
       @http_connection = Puppet::Network::HttpPool.http_instance(options[:enc_server], options[:enc_port])
       # Workaround for the fact that Dashboard is typically insecure.
       @http_connection.use_ssl = use_ssl

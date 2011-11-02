@@ -42,7 +42,7 @@ Puppet::Face.define(:dashboard, '0.0.1') do
     when_invoked do |options|
       data = { 'node' => { 'name' => options[:name] } }
       connection = Puppet::Dashboard::Classifier.connection(options)
-      connection.create('nodes', "Creating node", data)
+      connection.create('nodes', "Creating node #{options[:name]}", data)
     end
   end
   # 422 for create class - means it does not exist
@@ -53,7 +53,7 @@ Puppet::Face.define(:dashboard, '0.0.1') do
     when_invoked do |options|
       data = { 'node_class' => { 'name' => options[:name] } }
       connection = Puppet::Dashboard::Classifier.connection(options)
-      connection.create('node_classes', "Creating class", data)
+      connection.create('node_classes', "Creating class #{options[:name]}", data)
     end
   end
 
@@ -106,7 +106,7 @@ Puppet::Face.define(:dashboard, '0.0.1') do
       # I need data for being able
       data = { 'node_group' => { 'name' => options[:name] } }
       connection = Puppet::Dashboard::Classifier.connection(options)
-      connection.create('node_groups', "Creating group", data)
+      connection.create('node_groups', "Creating group: #{options[:name]}", data)
     end
   end
   # 422 - mssing group
