@@ -19,11 +19,6 @@ module Puppet::Dashboard
       nodes = handle_json_response(response, action)
     end
 
-    # find should return the data associated with 
-    def find
-
-    end
-
     def create(type, action, data)
       response = @http_connection.post("/#{type}.json", data.to_pson, @headers)
       handle_json_response(response, action, '201')
