@@ -1,29 +1,8 @@
+require 'puppet'
 require 'puppet/face'
 require 'puppet/dashboard/classifier'
 Puppet::Face.define(:dashboard, '0.0.1') do
-  option '--enc-server=' do
-    summary 'The External Node Classifier URL.'
-    description <<-EOT
-      The URL of the External Node Classifier.
-      This currently only supports the Dashboard
-      as an external node classifier.
-    EOT
-    default_to do
-      Puppet[:server]
-    end
-  end
-
-  option '--enc-port=' do
-    summary 'The External Node Classifier Port'
-    description <<-EOT
-      The port of the External Node Classifier.
-      This currently only supports the Dashboard
-      as an external node classifier.
-    EOT
-    default_to do
-      3000
-    end
-  end
+  Puppet::CloudPack.add_classify_options(self)
   # 404 cannot connect to URL
   # 500 database could be turned off (internal
   action 'list' do
