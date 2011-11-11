@@ -1,5 +1,6 @@
 require 'puppet'
 require 'puppet/network/http_pool'
+require 'puppet/cloudpack'
 module Puppet::Dashboard
   class Classifier
     def self.connection(options)
