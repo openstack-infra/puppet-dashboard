@@ -2,37 +2,31 @@ require 'puppet'
 require 'puppet/face'
 require 'puppet/dashboard/classifier'
 Puppet::Face.define(:dashboard, '0.0.1') do
+  # TODO - default run mode should be agent
   Puppet::CloudPack.add_classify_options(self)
   # 404 cannot connect to URL
   # 500 database could be turned off (internal
   action 'list' do
-    summary 'list all of a certain type from the dashboard, this currently supports the ability to list: classes, nodes, and groups'
+    description 'lists instances of classes, groups, or nodes from the dashboard'
     when_invoked do |type, options|
       type_map = {'classes' => 'node_classes', 'nodes' => 'nodes', 'groups' => 'node_groups'}
+      type_name = type_map[type] || raise(Puppet::Error, "Invalid type specified: #{type}. Allowed types are #{type_map.keys.join(',')}")
       connection = Puppet::Dashboard::Classifier.connection(options)
-      connection.list(type_map[type], "Listing #{type}")
+      connection.list(type_name, "Listing #{type}", options)
     end
   end
   # 422 for create node - means it does not exist
-  action 'create_node' do
-    option '--name=' do
-      required
-    end
-    when_invoked do |options|
-      data = { 'node' => { 'name' => options[:name] } }
-      connection = Puppet::Dashboard::Classifier.connection(options)
-      connection.create('nodes', "Creating node #{options[:name]}", data)
-    end
-  end
-  # 422 for create class - means it does not exist
-  action 'create_class' do
-    option '--name=' do
-      required
-    end
-    when_invoked do |options|
-      data = { 'node_class' => { 'name' => options[:name] } }
-      connection = Puppet::Dashboard::Classifier.connection(options)
-      connection.create('node_classes', "Creating class #{options[:name]}", data)
+
+  {'node' => ['node', 'nodes'], 'class' => ['node_class', 'node_classes']}.each do |type, dash_type|
+    action "create_#{type}" do
+      option '--name=' do
+        required
+      end
+      when_invoked do |options|
+        data = { dash_type[0] => { 'name' => options[:name] } }
+        connection = Puppet::Dashboard::Classifier.connection(options)
+        connection.create(dash_type[1], "Creating #{type} #{options[:name]}", data, options)
+      end
     end
   end
 
@@ -115,7 +109,7 @@ Puppet::Face.define(:dashboard, '0.0.1') do
       # I need data for being able
       data = { 'node_group' => { 'name' => options[:name] } }
       connection = Puppet::Dashboard::Classifier.connection(options)
-      connection.create('node_groups', "Creating group: #{options[:name]}", data)
+      connection.create('node_groups', "Creating group: #{options[:name]}", data, options)
     end
   end
   # 422 - mssing group
@@ -130,7 +124,7 @@ Puppet::Face.define(:dashboard, '0.0.1') do
     when_invoked do |options|
       data = { 'node_name' => options[:node_name], 'group_name' => options[:group_name] }
       connection = Puppet::Dashboard::Classifier.connection(options)
-      connection.create('memberships', "Adding group to node", data)
+      connection.create('memberships', "Adding group to node", data, options)
     end
   end
 

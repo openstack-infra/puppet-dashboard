@@ -23,27 +23,24 @@ module Puppet::Dashboard
     end
 
     # list expects a return of 200
-    def list(type, action)
-      response = @http_connection.get("/#{type}.json", @headers )
-      nodes = handle_json_response(response, action)
+    def list(type, action, options)
+      nodes = Puppet::CloudPack.http_request(
+        @http_connection,
+        "/#{type}.json",
+        options,
+        action
+      )
     end
 
-    def create(type, action, data)
-      response = @http_connection.post("/#{type}.json", data.to_pson, @headers)
-      handle_json_response(response, action, '201')
-    end
-
-    def handle_json_response(response, action, expected_code='200')
-      if response.code == expected_code
-        Puppet.notice "#{action} ... Done"
-        PSON.parse response.body
-      else
-        # I should probably raise an exception!
-        Puppet.warning "#{action} ... Failed"
-        Puppet.info("Body: #{response.body}")
-        Puppet.warning "Server responded with a #{response.code} status"
-        raise Puppet::Error, "Could not: #{action}, got #{response.code} expected #{expected_code}"
-      end
+    def create(type, action, data, options)
+      response = Puppet::CloudPack.http_request(
+        @http_connection,
+        "/#{type}.json",
+        options,
+        action,
+        '201',
+        data
+      )
     end
   end
 end
