@@ -7,6 +7,13 @@ module Puppet::Dashboard
       @connection ||= Puppet::Dashboard::Classifier.new(options, false)
     end
 
+    # conventince method for array munging
+    def self.to_array(maybe_array)
+      if maybe_array
+        maybe_array.is_a?(Array) ? maybe_array : maybe_array.join(',')
+      end
+    end
+
     attr_reader :connection_options
 
     def initialize(options, use_ssl=false)
@@ -39,7 +46,16 @@ module Puppet::Dashboard
       end
     end
 
+    # find a group if it exists
+    def find_group(group_name)
+      list('node_groups', "Listing groups").find do |group|
+        group['name'] == group_name
+      end
+    end
+
     # create the specified class
+    # this does not check to see if the class exists
+    # if you want to check first, use create_classes
     def create_class(name)
       data = { 'node_class' => { 'name' => name } }
       create('node_classes', "Creating class #{name}", data)
@@ -48,44 +64,99 @@ module Puppet::Dashboard
     # given a list of classes, create the ones that do not exist
     # return a hash of all of the specified hashes name => id
     def create_classes(klasses)
-      node_classes = list('node_classes', 'Listing classes')
+      if klasses
+        node_classes = list('node_classes', 'Listing classes')
 
-      klass_hash = {}
-      # build a hash of class_name => id
-      node_classes.each do |x|
-        if klasses.include?(x['name'])
-          klass_hash[x['name']] = x['id']
+        klass_hash = {}
+        # build a hash of class_name => id
+        node_classes.each do |x|
+          if klasses.include?(x['name'])
+            klass_hash[x['name']] = x['id']
+          end
         end
-      end
 
-      klasses.each do |k|
-        unless klass_hash[k]
-          # detect any classes that were not found and creat them
-          result = create_class(k)
-          Puppet.info("Created class: #{result.inspect}")
-          klass_hash[result['name']] = result['id']
+        klasses.each do |k|
+          unless klass_hash[k]
+            # detect any classes that were not found and creat them
+            result = create_class(k)
+            Puppet.info("Created class: #{result.inspect}")
+            klass_hash[result['name']] = result['id']
+          end
         end
-      end
 
-      klass_hash
+        klass_hash
+      end
     end
 
-    def create_node(certname, klasses)
-      data = { 'node' => { 'name' => certname } }
+    def create_node(certname, klasses, parameters, groups)
 
       # find the current list of nodes
       node = find_node(certname)
 
       # stop if node already exists
-      # I will eventually need to support the ability to edit an existing node
       return {:status => "Node #{certname} already exists"} if node
 
       # create any missing classes
       klass_ids = create_classes(klasses).values
 
+      # make sure all groups exist and get their ids
+      group_id_hash = {}
+      (groups || []).collect do |group|
+        group_hash = find_group(group)
+        if group_hash
+          group_id_hash[group_hash['name']] = group_hash['id']
+        else
+          return {:status => "Parent Group #{parent} for node #{certname} does not exist"}
+        end
+      end
+      group_ids = (group_id_hash || {} ).values
+
+      data = { 'node' => { 'name' => certname } }
       data['node']['assigned_node_class_ids'] = klass_ids
+      data['node']['assigned_node_group_ids'] = group_ids
+      data['node']['parameter_attributes'] = []
+      parameters.each do |key, value|
+        data['node']['parameter_attributes'].push({'key' => key, 'value' => value})
+      end
 
       create('nodes', "Creating node #{certname}", data)
+    end
+
+    def create_group(group_name, parameters, parent_groups, classes)
+
+      # check if the group already exists
+      group = find_group(group_name)
+
+      # stop if group already exists
+      return {:status => "Group #{group_name} already exists"} if group
+
+      # make sure that the classes exist, create them if they do not
+      klass_ids = (create_classes(classes) || {} ).values
+
+      # make sure that the parent groups exist, fail if they do not...?
+      # I dont want to support parent groups yet...
+      parent_group_id_hash = {}
+      (parent_groups || []).collect do |parent|
+        group_hash = find_group(parent)
+        if group_hash
+          parent_group_id_hash[group_hash['name']] = group_hash['id']
+        else
+          return {:status => "Parent Group #{parent} for group #{group_name} does not exist"}
+        end
+      end
+      parent_group_ids = (parent_group_id_hash || {} ).values
+
+      # set up the post data
+      data = { 'node_group' => { 'name' => group_name } }
+      data['node_group']['assigned_node_class_ids'] = klass_ids
+      data['node_group']['assigned_node_group_ids'] = parent_group_ids
+      data['node_group']['parameter_attributes'] = []
+      (parameters || {} ).each do |key, value|
+        data['node_group']['parameter_attributes'].push({'key' => key, 'value' => value})
+      end
+
+      create('node_groups', "Creating group: #{group_name}", data)
+
     end
 
     # list expects a return of 200

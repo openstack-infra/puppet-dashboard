@@ -32,9 +32,16 @@ Puppet::Face.define(:dashboard, '0.0.1') do
     option '--classes=' do
       summary 'a comma delimited list of classes'
     end
+    option '--groups=' do
+      summary 'a list of groups to add to the node'
+    end
     when_invoked do |options|
-      klasses = options[:classes].is_a?(Array) ? options[:classes] : options[:classes].join(',')
-      Puppet::Dashboard::Classifier.connection(options).create_node(options[:name], klasses)
+      Puppet::Dashboard::Classifier.connection(options).create_node(
+        options[:name],
+        Puppet::Dashboard::Classifier.to_array(options[:classes]),
+        options[:parameters],
+        Puppet::Dashboard::Classifier.to_array(options[:groups])
+      )
     end
   end
 
@@ -45,6 +52,32 @@ Puppet::Face.define(:dashboard, '0.0.1') do
     end
     when_invoked do |options|
       Puppet::Dashboard::Classifier.connection(options).create_classes([options[:name]])
+    end
+  end
+
+  action 'create_group' do
+    option '--name=' do
+      summary 'Name of the group to be created'
+      required
+    end
+    option '--parameters=' do
+      description <<-EOT
+        This is only intended to be used programmatically.
+      EOT
+    end
+    option '--parent-groups=' do
+      summary 'The parent groups'
+    end
+    option '--classes=' do
+      summary 'classes to add to the group'
+    end
+    when_invoked do |options|
+      Puppet::Dashboard::Classifier.connection(options).create_group(
+        options[:name],
+        options[:parameters],
+        options[:parent_groups],
+        Puppet::Dashboard::Classifier.to_array(options[:classes])
+      )
     end
   end
 
@@ -93,35 +126,6 @@ Puppet::Face.define(:dashboard, '0.0.1') do
     when_invoked do |options|
       connection = Puppet::Dashboard::Classifier.connection(options)
       connection.add_module(options[:module_name], options[:modulepath])
-    end
-  end
-
-  # if you pass data, then this is not intended to be used from the command line
-  # we should just parse a YAML file for this
-  action 'create_group' do
-    option '--name=' do
-      required
-    end
-    when_invoked do |options|
-      # I need data for being able
-      data = { 'node_group' => { 'name' => options[:name] } }
-      connection = Puppet::Dashboard::Classifier.connection(options)
-      connection.create('node_groups', "Creating group: #{options[:name]}", data, options)
-    end
-  end
-  # 422 - mssing group
-  # 422 - mossing node
-  action 'add_group_to_node' do
-    option '--node-name=' do
-      required
-    end
-    option '--group-name=' do
-      required
-    end
-    when_invoked do |options|
-      data = { 'node_name' => options[:node_name], 'group_name' => options[:group_name] }
-      connection = Puppet::Dashboard::Classifier.connection(options)
-      connection.create('memberships', "Adding group to node", data, options)
     end
   end
 
