@@ -17,16 +17,34 @@ Puppet::Face.define(:dashboard, '0.0.1') do
   end
   # 422 for create node - means it does not exist
 
-  {'node' => ['node', 'nodes'], 'class' => ['node_class', 'node_classes']}.each do |type, dash_type|
-    action "create_#{type}" do
-      option '--name=' do
-        required
-      end
-      when_invoked do |options|
-        data = { dash_type[0] => { 'name' => options[:name] } }
-        connection = Puppet::Dashboard::Classifier.connection(options)
-        connection.create(dash_type[1], "Creating #{type} #{options[:name]}", data, options)
-      end
+  action 'create_node' do
+    option '--name=' do
+      summary 'Certificate name of node to create'
+      required
+    end
+    option '--parameter=' do
+      summary 'Parameter that should be added to the node'
+      description <<-EOT
+        Param that should be added to node. This is only expected to
+        be specified programmatically.
+      EOT
+    end
+    option '--classes=' do
+      summary 'a comma delimited list of classes'
+    end
+    when_invoked do |options|
+      klasses = options[:classes].is_a?(Array) ? options[:classes] : options[:classes].join(',')
+      Puppet::Dashboard::Classifier.connection(options).create_node(options[:name], klasses)
+    end
+  end
+
+  action 'create_class' do
+    option '--name=' do
+      summary 'Name of class to create in the dashboard'
+      required
+    end
+    when_invoked do |options|
+      Puppet::Dashboard::Classifier.connection(options).create_classes([options[:name]])
     end
   end
 
@@ -49,19 +67,8 @@ Puppet::Face.define(:dashboard, '0.0.1') do
       end
     end
     when_invoked do |options|
-      Puppet[:modulepath] = options[:modulepath]
-      (Puppet::Face[:resource_type, :current].search(options[:module_name]) || []).collect do |resource_type|
-        # I am not going to bother checking that everything we find is loadable
-        # This patch assumes that the modules are properly organized
-        if resource_type.type == :hostclass
-          options.delete(:module_name)
-          options.delete(:modulepath)
-          Puppet::Face[:dashboard, :current].create_class(options.merge(:name => resource_type.name))
-          resource_type.name
-        else
-          nil
-        end
-      end.compact
+      connection = Puppet::Dashboard::Classifier.connection(options)
+      connection.register_module(options[:module_name], options[:modulepath])
     end
   end
 
@@ -84,20 +91,8 @@ Puppet::Face.define(:dashboard, '0.0.1') do
       required
     end
     when_invoked do |options|
-      Dir.chdir(options[:modulepath].split(':').first) do
-        options[:module_name].split(',').each do |module_name|
-          # install the module into the modulepath
-          `puppet module install #{module_name}`
-          author, puppet_module = module_name.split('-', 2)
-          override_hash = if puppet_module
-            {:module_name => puppet_module }
-          else
-            {:module_name => module_name }
-          end
-          Puppet::Face[:dashboard, :current].register_module(options.merge(override_hash))
-          # do nothing
-        end
-      end
+      connection = Puppet::Dashboard::Classifier.connection(options)
+      connection.add_module(options[:module_name], options[:modulepath])
     end
   end
 
