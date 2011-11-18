@@ -12,7 +12,7 @@ Puppet::Face.define(:dashboard, '0.0.1') do
       type_map = {'classes' => 'node_classes', 'nodes' => 'nodes', 'groups' => 'node_groups'}
       type_name = type_map[type] || raise(Puppet::Error, "Invalid type specified: #{type}. Allowed types are #{type_map.keys.join(',')}")
       connection = Puppet::Dashboard::Classifier.connection(options)
-      connection.list(type_name, "Listing #{type}", options)
+      connection.list(type_name, "Listing #{type}")
     end
   end
   # 422 for create node - means it does not exist
