@@ -22,7 +22,7 @@ Puppet::Face.define(:dashboard, '0.0.1') do
       summary 'Certificate name of node to create'
       required
     end
-    option '--parameter=' do
+    option '--parameters=' do
       summary 'Parameter that should be added to the node'
       description <<-EOT
         Param that should be added to node. This is only expected to
