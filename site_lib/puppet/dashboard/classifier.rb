@@ -25,7 +25,10 @@ module Puppet::Dashboard
         :enc_auth_passwd => options[:enc_auth_passwd],
         :enc_auth_user => options[:enc_auth_user]
       }
+      ssldir_save = Puppet[:ssldir]
+      Puppet[:ssldir] = '/dev/null'
       @http_connection = Puppet::Network::HttpPool.http_instance(options[:enc_server], options[:enc_port])
+      Puppet[:ssldir] = ssldir_save
       if options[:enc_ssl] then
         @http_connection.use_ssl = true
         @uri_scheme = 'https'
