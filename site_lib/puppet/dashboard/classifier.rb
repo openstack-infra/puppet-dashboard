@@ -10,7 +10,7 @@ module Puppet::Dashboard
     # conventince method for array munging
     def self.to_array(maybe_array)
       if maybe_array
-        maybe_array.is_a?(Array) ? maybe_array : maybe_array.join(',')
+        maybe_array.is_a?(Array) ? maybe_array : maybe_array.split(',')
       end
     end
 
