@@ -1,0 +1,7 @@
+Need to set a variable for /var/lib/mysql in the mysql module
+Do we need to set the hostname or data in Apache?
+Update puppet.conf if master == true? Something to get the report URL set.
+Decide how to integrate Passenger (init script, mainly)
+- Require apache, Passenger (which requires gcc and ruby)
+- Restart Passenger by touching ./project/restart.txt or...
+	- If passenger, kill the init script and notify Apache when we need Puppet Dashboard to restart.
