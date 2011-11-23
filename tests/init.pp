@@ -1,14 +1,19 @@
 node default {
 
   class {'dashboard':
-    dashboard_ensure          => 'present',
-    dashboard_user            => 'puppet-dashboard',
-    dashboard_group           => 'puppet-dashboard',
-    dashboard_password        => 'changeme',
-    dashboard_db              => 'dashboard_production',
-    dashboard_charset         => 'utf8',
-    mysql_root_pw             => 'REALLY_change_me',
-  }
+     dashboard_ensure          => 'present',
+     dashboard_user            => 'puppet-dbuser',
+     dashboard_group           => 'puppet-dbgroup',
+     dashboard_password        => 'changeme',
+     dashboard_db              => 'dashboard_prod',
+     dashboard_charset         => 'utf8',
+     dashboard_site            => $fqdn,
+     dashboard_port            => '8080',
+     mysql_root_pw             => 'changemetoo',
+     passenger                 => true,
+     mysql_package_provider    => 'yum',
+     ruby_mysql_package        => 'ruby-mysql',
+   }
 
 }
 
