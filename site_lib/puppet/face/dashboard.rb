@@ -126,7 +126,7 @@ Puppet::Face.define(:dashboard, '0.0.1') do
       Puppet::Dashboard::Classifier.connection(options).create_group(
         options[:name],
         options[:parameters],
-        options[:parent_groups],
+        Puppet::Dashboard::Classifier.to_array(options[:parent_groups]),
         Puppet::Dashboard::Classifier.to_array(options[:classes])
       )
     end
