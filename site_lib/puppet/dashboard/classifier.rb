@@ -4,7 +4,7 @@ require 'puppet/cloudpack'
 module Puppet::Dashboard
   class Classifier
     def self.connection(options)
-      @connection ||= Puppet::Dashboard::Classifier.new(options, false)
+      @connection ||= Puppet::Dashboard::Classifier.new(options)
     end
 
     # convenience method for array munging
@@ -16,7 +16,7 @@ module Puppet::Dashboard
 
     attr_reader :connection_options
 
-    def initialize(options, use_ssl=false)
+    def initialize(options)
       # Workaround for the fact that Dashboard is typically insecure.
       @connection_options = {
         :enc_server => options[:enc_server],
@@ -109,7 +109,7 @@ module Puppet::Dashboard
         if group_hash
           group_id_hash[group_hash['name']] = group_hash['id']
         else
-          return {:status => "Parent Group #{parent} for node #{certname} does not exist"}
+          return {:status => "Parent Group #{group} for node #{certname} does not exist"}
         end
       end
       group_ids = (group_id_hash || {} ).values
@@ -118,7 +118,7 @@ module Puppet::Dashboard
       data['node']['assigned_node_class_ids'] = klass_ids
       data['node']['assigned_node_group_ids'] = group_ids
       data['node']['parameter_attributes'] = []
-      parameters.each do |key, value|
+      (parameters || {}).each do |key, value|
         data['node']['parameter_attributes'].push({'key' => key, 'value' => value})
       end
 
@@ -200,18 +200,13 @@ module Puppet::Dashboard
 
     def add_module(module_names, modulepath)
       Dir.chdir(modulepath.split(':').first) do
-        module_names.split(',').each do |module_name|
+        module_names.each do |module_name|
           # install the module into the modulepath
           # TODO - port to use the new faces version
           # Puppet::Face[:module, :current].install(module_name)
           `puppet module install #{module_name}`
           author, puppet_module = module_name.split('-', 2)
-          module_name = if puppet_module
-            puppet_module
-          else
-            module_name
-          end
-          register_module(puppet_module, modulepath)
+          register_module(puppet_module || module_name, modulepath)
         end
       end
     end

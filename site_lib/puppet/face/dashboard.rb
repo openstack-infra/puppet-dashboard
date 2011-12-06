@@ -126,7 +126,7 @@ Puppet::Face.define(:dashboard, '0.0.1') do
       Puppet::Dashboard::Classifier.connection(options).create_group(
         options[:name],
         options[:parameters],
-        options[:parent_groups],
+        Puppet::Dashboard::Classifier.to_array(options[:parent_groups]),
         Puppet::Dashboard::Classifier.to_array(options[:classes])
       )
     end
@@ -172,7 +172,7 @@ Puppet::Face.define(:dashboard, '0.0.1') do
         Puppet[:modulepath]
       end
     end
-    option '--module-name=' do
+    option '--module-names=' do
       description <<-EOT
         name of module from forge to download
         should follow convention of account-module
@@ -182,7 +182,10 @@ Puppet::Face.define(:dashboard, '0.0.1') do
     end
     when_invoked do |options|
       connection = Puppet::Dashboard::Classifier.connection(options)
-      connection.add_module(options[:module_name], options[:modulepath])
+      connection.add_module(
+        Puppet::Dashboard::Classifier.to_array(options[:module_names]),
+        options[:modulepath]
+      )
     end
   end
 
