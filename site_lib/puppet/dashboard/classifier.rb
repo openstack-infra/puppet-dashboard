@@ -118,7 +118,7 @@ module Puppet::Dashboard
       data['node']['assigned_node_class_ids'] = klass_ids
       data['node']['assigned_node_group_ids'] = group_ids
       data['node']['parameter_attributes'] = []
-      parameters.each do |key, value|
+      (parameters || {}).each do |key, value|
         data['node']['parameter_attributes'].push({'key' => key, 'value' => value})
       end
 
