@@ -4,7 +4,7 @@ require 'puppet/cloudpack'
 module Puppet::Dashboard
   class Classifier
     def self.connection(options)
-      @connection ||= Puppet::Dashboard::Classifier.new(options, false)
+      @connection ||= Puppet::Dashboard::Classifier.new(options)
     end
 
     # convenience method for array munging
@@ -16,7 +16,7 @@ module Puppet::Dashboard
 
     attr_reader :connection_options
 
-    def initialize(options, use_ssl=false)
+    def initialize(options)
       # Workaround for the fact that Dashboard is typically insecure.
       @connection_options = {
         :enc_server => options[:enc_server],
