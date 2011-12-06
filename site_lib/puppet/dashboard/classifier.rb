@@ -109,7 +109,7 @@ module Puppet::Dashboard
         if group_hash
           group_id_hash[group_hash['name']] = group_hash['id']
         else
-          return {:status => "Parent Group #{parent} for node #{certname} does not exist"}
+          return {:status => "Parent Group #{group} for node #{certname} does not exist"}
         end
       end
       group_ids = (group_id_hash || {} ).values
