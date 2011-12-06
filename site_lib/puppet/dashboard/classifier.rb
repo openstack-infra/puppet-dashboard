@@ -7,7 +7,7 @@ module Puppet::Dashboard
       @connection ||= Puppet::Dashboard::Classifier.new(options, false)
     end
 
-    # conventince method for array munging
+    # convenience method for array munging
     def self.to_array(maybe_array)
       if maybe_array
         maybe_array.is_a?(Array) ? maybe_array : maybe_array.split(',')
@@ -202,6 +202,8 @@ module Puppet::Dashboard
       Dir.chdir(modulepath.split(':').first) do
         module_names.split(',').each do |module_name|
           # install the module into the modulepath
+          # TODO - port to use the new faces version
+          # Puppet::Face[:module, :current].install(module_name)
           `puppet module install #{module_name}`
           author, puppet_module = module_name.split('-', 2)
           module_name = if puppet_module
