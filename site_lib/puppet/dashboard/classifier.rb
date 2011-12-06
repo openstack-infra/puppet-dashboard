@@ -200,18 +200,13 @@ module Puppet::Dashboard
 
     def add_module(module_names, modulepath)
       Dir.chdir(modulepath.split(':').first) do
-        module_names.split(',').each do |module_name|
+        module_names.each do |module_name|
           # install the module into the modulepath
           # TODO - port to use the new faces version
           # Puppet::Face[:module, :current].install(module_name)
           `puppet module install #{module_name}`
           author, puppet_module = module_name.split('-', 2)
-          module_name = if puppet_module
-            puppet_module
-          else
-            module_name
-          end
-          register_module(puppet_module, modulepath)
+          register_module(puppet_module || module_name, modulepath)
         end
       end
     end
