@@ -27,6 +27,24 @@ To install the Puppet Dashboard and configure it with sane defaults, include the
 
 None of these parameters are required - if you neglect any of them their values will default back to those set in the dashboard::params subclass.
 
+# Puppet Dashboard Face
+
+The Puppet Dashboard Face requires that the cloud provisioner version 1.0.0 is installed
+and in Ruby's loadpath (which can be set with the RUBYLIB environment variable)
+
+to use the Puppet Dashboard Face, add the site_lib directory to your RUBYLIB:
+
+export RUBYLIB=`pwd`/site_lib:$RUBYLIB
+
+To learn more about this face, you can then run:
+
+puppet help dashboard
+
+The ability to set parameters is only supported if
+the Face is used programmatically:
+
+  Puppet::Face[:dashboard, :current].create_node(:name => 'name', :parameters => {'param1' => value'})
+
 # Feature Requests
 
 * Sqlite support.
