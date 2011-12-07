@@ -39,10 +39,13 @@ To use the Puppet Dashboard Face:
 * Download or clone puppetlabs-dashboard to your Puppet modulepath (i.e. ~/.puppet/modules or /etc/puppet/modules)
 * Download or clone [puppetlabs-cloud-provisioner](https://github.com/puppetlabs/puppetlabs-cloud-provisioner) (version 1.0.0 or later) to your Puppet modulepath
 * Ensure that the guid and fog gems are installed
+
         gem install fog -v 1.0.0 --no-rdoc --no-ri && gem install guid --no-rdoc --no-ri
 * Export your RUBYLIB environment variable to point to the lib directory in puppetlabs-cloud-provisioner and the site\_lib directory in puppetlabs-dashboard
+
         export RUBYLIB=/etc/puppet/modules/cloud-provisioner/lib:/etc/puppet/modules/puppetlabs-dashboard/site\_lib:$RUBYLIB
 * Test the face and learn more about its usage
+
         puppet help dashboard
 
 The ability to set parameters is only supported if
