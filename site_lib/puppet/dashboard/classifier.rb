@@ -67,10 +67,10 @@ module Puppet::Dashboard
     # given a list of classes, create the ones that do not exist
     # return a hash of all of the specified hashes name => id
     def create_classes(klasses)
+      klass_hash = {}
       if klasses
         node_classes = list('node_classes', 'Listing classes')
 
-        klass_hash = {}
         # build a hash of class_name => id
         node_classes.each do |x|
           if klasses.include?(x['name'])
@@ -87,8 +87,8 @@ module Puppet::Dashboard
           end
         end
 
-        klass_hash
       end
+      klass_hash
     end
 
     def create_node(certname, klasses, parameters, groups)
