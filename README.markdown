@@ -32,13 +32,21 @@ None of these parameters are required - if you neglect any of them their values 
 The Puppet Dashboard Face requires that the cloud provisioner version 1.0.0 is installed
 and in Ruby's loadpath (which can be set with the RUBYLIB environment variable)
 
-to use the Puppet Dashboard Face, add the site_lib directory to your RUBYLIB:
+To use the Puppet Dashboard Face:
 
-export RUBYLIB=`pwd`/site_lib:$RUBYLIB
 
-To learn more about this face, you can then run:
+* Ensure that you have Puppet 2.7.7 or greater installed.  This face MAY work on version 2.7.2 or later, but it's not been tested.
+* Download or clone puppetlabs-dashboard to your Puppet modulepath (i.e. ~/.puppet/modules or /etc/puppet/modules)
+* Download or clone [puppetlabs-cloud-provisioner](https://github.com/puppetlabs/puppetlabs-cloud-provisioner) (version 1.0.0 or later) to your Puppet modulepath
+* Ensure that the guid and fog gems are installed
 
-puppet help dashboard
+        gem install fog -v 1.0.0 --no-rdoc --no-ri && gem install guid --no-rdoc --no-ri
+* Export your RUBYLIB environment variable to point to the lib directory in puppetlabs-cloud-provisioner and the site\_lib directory in puppetlabs-dashboard
+
+        export RUBYLIB=/etc/puppet/modules/cloud-provisioner/lib:/etc/puppet/modules/puppetlabs-dashboard/site\_lib:$RUBYLIB
+* Test the face and learn more about its usage
+
+        puppet help dashboard
 
 The ability to set parameters is only supported if
 the Face is used programmatically:
