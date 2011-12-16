@@ -20,8 +20,64 @@ Puppet::Face.define(:dashboard, '0.0.1') do
   EOT
 
   # TODO - default run mode should be agent
-  # this is actually adding an extra unused option node-group #10743
-  Puppet::CloudPack.add_classify_options(self)
+  option '--enc-ssl' do
+    summary 'Whether to use SSL when connecting to the ENC'
+    description <<-'EOT'
+      By default, we do not connect to the ENC over SSL.  This options
+      specifies all HTTP connections to the ENC to go over SSL in order to
+      provide encryption.
+    EOT
+  end
+
+  option '--enc-server=' do
+    summary 'The External Node Classifier hostname'
+    description <<-EOT
+      The hostname of the External Node Classifier.  This currently only
+      supports the Dashboard as an external node classifier.
+    EOT
+    default_to do
+      Puppet[:server]
+    end
+  end
+
+  option '--enc-port=' do
+    summary 'The External Node Classifier Port'
+    description <<-EOT
+      The port of the External Node Classifier.  This currently only
+      supports the Dashboard as an external node classifier.
+    EOT
+    default_to do 3000 end
+  end
+
+  option '--enc-auth-user=' do
+    summary 'User name for authentication to ENC'
+    description <<-EOT
+      The Puppet Dashboard can be secured using HTTP authentication.  If
+      the dashboard is configured with HTTP authentication use this option
+      to supply the credentials to authenticate the request.
+
+      Note, this option will default to the PUPPET_ENC_AUTH_USER
+      environment variable.  Please use this environment variable if you
+      are concerned about usernames and passwords being exposed via the
+      Unix process table.
+    EOT
+    default_to do ENV['PUPPET_ENC_AUTH_USER'] end
+  end
+
+  option '--enc-auth-passwd=' do
+    summary 'Password for authentication to ENC'
+    description <<-EOT
+      The Puppet Dashboard can be secured using HTTP authentication.  If
+      the dashboard is configured with HTTP authentication use this option
+      to supply the credentials to authenticate the request.
+
+      Note, this option will default to the PUPPET_ENC_AUTH_PASSWD
+      environment variable.  Please use this environment variable if you
+      are concerned about usernames and passwords being exposed via the
+      Unix process table.
+    EOT
+    default_to do ENV['PUPPET_ENC_AUTH_PASSWD'] end
+  end
 
   # 404 cannot connect to URL
   # 500 database could be turned off (internal
