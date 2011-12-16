@@ -48,11 +48,6 @@ To use the Puppet Dashboard Face:
 
         puppet help dashboard
 
-The ability to set parameters is only supported if
-the Face is used programmatically:
-
-  Puppet::Face[:dashboard, :current].create_node(:name => 'name', :parameters => {'param1' => value'})
-
 # Feature Requests
 
 * Sqlite support.

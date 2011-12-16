@@ -50,10 +50,12 @@ Puppet::Face.define(:dashboard, '0.0.1') do
     option '--parameters=' do
       summary 'Parameters that should be added to the node'
       description <<-EOT
-        Parameters that should be added to node. This only
-        accepts a Hash and thus is only expected to be specified
-        programmatically.
+        Parameters that should be added to node. Accepts either a
+        Hash or a string of the form: 'key1=value1,key2=value2'
       EOT
+      before_action do |action, args, options|
+        options[:parameters] = Puppet::Dashboard::Classifier.to_hash(options[:parameters])
+      end
     end
     option '--classes=' do
       summary 'List of classes to be added to the node'
@@ -101,10 +103,12 @@ Puppet::Face.define(:dashboard, '0.0.1') do
     option '--parameters=' do
       summary 'Parameters to be added to the group'
       description <<-EOT
-        Parameters that should be added to the group.
-        This currently on accepts a Hash so it can only be used
-        programmatically.
+        Parameters that should be added to node. Accepts either a
+        Hash or a string of the form: 'key1=value1,key2=value2'
       EOT
+      before_action do |action, args, options|
+        options[:parameters] = Puppet::Dashboard::Classifier.to_hash(options[:parameters])
+      end
     end
     option '--parent-groups=' do
       summary 'List of parent groups to add to the node'

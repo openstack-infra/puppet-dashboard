@@ -14,6 +14,22 @@ module Puppet::Dashboard
       end
     end
 
+    def self.to_hash(maybe_hash)
+      if maybe_hash.is_a?(Hash)
+        maybe_hash
+      elsif maybe_hash.is_a?(String)
+        Hash[maybe_hash.split(',').collect do |tag|
+          if tag =~ /(\w+)=(\w+)/
+            [$1, $2]
+          else
+            raise ArgumentError, 'Could not parse hash. Please check your format'
+          end
+        end ]
+      else
+        raise ArgumentError, 'Could not parse hash. Please check your format'
+      end
+    end
+
     attr_reader :connection_options
 
     def initialize(options)
