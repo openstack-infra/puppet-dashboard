@@ -56,6 +56,7 @@ class dashboard (
   $dashboard_charset        = $dashboard::params::dashboard_charset,
   $dashboard_site           = $dashboard::params::dashboard_site,
   $dashboard_port           = $dashboard::params::dashboard_port,
+  $dashboard_config         = $dashboard::params::dashboard_config,
   $mysql_root_pw            = $dashboard::params::mysql_root_pw,
   $passenger                = $dashboard::params::passenger,
   $mysql_package_provider   = $dashboard::params::mysql_package_provider,
@@ -76,7 +77,7 @@ class dashboard (
     -> Class['mysql::ruby']
     -> Class['mysql::server']
     -> Package[$dashboard_package]
-    -> Mysql::DB["${dashboard_db}"]
+    -> Mysql::DB[$dashboard_db]
     -> File["${dashboard::params::dashboard_root}/config/database.yml"]
     -> Exec['db-migrate']
     -> Class['dashboard::passenger']
@@ -91,34 +92,20 @@ class dashboard (
     -> Class['mysql::ruby']
     -> Class['mysql::server']
     -> Package[$dashboard_package]
-    -> Mysql::DB["${dashboard_db}"]
+    -> Mysql::DB[$dashboard_db]
     -> File["${dashboard::params::dashboard_root}/config/database.yml"]
     -> Exec['db-migrate']
     -> Service[$dashboard_service]
 
-    case $operatingsystem {
-      'centos','redhat','oel': {
-        file { '/etc/sysconfig/puppet-dashboard':
-          ensure  => present,
-          content => template('dashboard/puppet-dashboard-sysconfig'),
-          owner   => '0',
-          group   => '0',
-          mode    => '0644',
-          require => [ Package[$dashboard_package], User[$dashboard_user] ],
-          before  => Service[$dashboard_service],
-        }
-      }
-      'debian','ubuntu': {
-        file { '/etc/default/puppet-dashboard':
-          ensure  => present,
-          content => template('dashboard/puppet-dashboard.default.erb'),
-          owner   => '0',
-          group   => '0',
-          mode    => '0644',
-          require => [ Package[$dashboard_package], User[$dashboard_user] ],
-          before  => Service[$dashboard_service],
-        }
-      }
+    file { 'dashboard_config':
+      ensure  => present,
+      path    => $dashboard_config,
+      content => template("dashboard/config.${::osfamily}.erb"),
+      owner   => '0',
+      group   => '0',
+      mode    => '0644',
+      require => [ Package[$dashboard_package], User[$dashboard_user] ],
+      before  => Service[$dashboard_service],
     }
 
     service { $dashboard_service:
@@ -164,29 +151,29 @@ class dashboard (
 
   file { '/etc/logrotate.d/puppet-dashboard':
     ensure  => present,
-    content => template('puppet/puppet-dashboard.logrotate.erb'),
+    content => template('dashboard/puppet-dashboard.logrotate.erb'),
     owner   => '0',
     group   => '0',
     mode    => '0644',
   }
 
   exec { 'db-migrate':
-    command   => "rake RAILS_ENV=production db:migrate",
-    cwd       => "${dashboard::params::dashboard_root}",
-    path      => "/usr/bin/:/usr/local/bin/",
+    command   => 'rake RAILS_ENV=production db:migrate',
+    cwd       => $dashboard::params::dashboard_root,
+    path      => '/usr/bin/:/usr/local/bin/',
     creates   => "/var/lib/mysql/${dashboard_db}/nodes.frm",
   }
 
-  mysql::db { "${dashboard_db}":
+  mysql::db { $dashboard_db:
     user     => $dashboard_user,
     password => $dashboard_password,
     charset  => $dashboard_charset,
   }
 
   user { $dashboard_user:
-      comment    => 'Puppet Dashboard',
-      gid        => "${dashboard_group}",
       ensure     => 'present',
+      comment    => 'Puppet Dashboard',
+      gid        => $dashboard_group,
       shell      => '/sbin/nologin',
       managehome => true,
       home       => "/home/${dashboard_user}",

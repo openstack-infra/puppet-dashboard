@@ -14,31 +14,24 @@
 #
 class dashboard::passenger (
   $dashboard_site,
-  $dashboard_port
+  $dashboard_port,
+  $dashboard_config = $dashboard::params::dashboard_config
 ) inherits dashboard {
 
   Class ['::passenger']
   -> Apache::Vhost[$dashboard_site]
 
   class { '::passenger':
-     port    => $dashboard_port,
-   }
+    port    => $dashboard_port,
+  }
 
   file { '/etc/init.d/puppet-dashboard':
     ensure => absent,
   }
 
-  case $operatingsystem {
-    'centos','redhat','oel': {
-      file { '/etc/sysconfig/puppet-dashboard':
-        ensure => absent,
-      }
-    }
-    'debian','ubuntu': {
-      file { '/etc/default/puppet-dashboard':
-        ensure => absent,
-      }
-    }
+  file { 'dashboard_config':
+    ensure => absent,
+    path   => $dashboard_config,
   }
 
   apache::vhost { $dashboard_site:
