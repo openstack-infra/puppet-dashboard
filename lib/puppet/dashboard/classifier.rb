@@ -1,6 +1,5 @@
 require 'puppet'
 require 'puppet/network/http_pool'
-require 'puppet/cloudpack'
 module Puppet::Dashboard
   class Classifier
     def self.connection(options)
@@ -11,6 +10,22 @@ module Puppet::Dashboard
     def self.to_array(maybe_array)
       if maybe_array
         maybe_array.is_a?(Array) ? maybe_array : maybe_array.split(',')
+      end
+    end
+
+    def self.to_hash(maybe_hash)
+      if maybe_hash.is_a?(Hash)
+        maybe_hash
+      elsif maybe_hash.is_a?(String)
+        Hash[maybe_hash.split(',').collect do |tag|
+          if tag =~ /(\w+)=(\w+)/
+            [$1, $2]
+          else
+            raise ArgumentError, 'Could not parse hash. Please check your format'
+          end
+        end ]
+      else
+        raise ArgumentError, 'Could not parse hash. Please check your format'
       end
     end
 
@@ -164,7 +179,7 @@ module Puppet::Dashboard
 
     # list expects a return of 200
     def list(type, action)
-      nodes = Puppet::CloudPack.http_request(
+      nodes = Puppet::Dashboard::Classifier.http_request(
         @http_connection,
         "/#{type}.json",
         connection_options,
@@ -173,7 +188,7 @@ module Puppet::Dashboard
     end
 
     def create(type, action, data)
-      response = Puppet::CloudPack.http_request(
+      response = Puppet::Dashboard::Classifier.http_request(
         @http_connection,
         "/#{type}.json",
         connection_options,
@@ -181,6 +196,55 @@ module Puppet::Dashboard
         '201',
         data
       )
+    end
+
+    # Method to make generic, SSL, Authenticated HTTP requests
+    # and parse the JSON response.  Primarily for #10377 and #10197
+    def self.http_request(http, path, options = {}, action = nil, expected_code = '200', data = nil)
+      action ||= path
+      # We need to POST data, otherwise we'll use GET
+      request = data ? Net::HTTP::Post.new(path) : Net::HTTP::Get.new(path)
+      # Set the form data
+      request.body = data.to_pson if data
+      # Authentication information
+      request.basic_auth(options[:enc_auth_user], options[:enc_auth_passwd]) if ! options[:enc_auth_user].nil?
+      # Content Type of the request
+      #request["Content-Type"]='applicaton/json'
+      request.set_content_type('application/json')
+
+      # Wrap the request in an exception handler
+      begin
+        response = http.start { |http| http.request(request) }
+      rescue Errno::ECONNREFUSED => e
+        Puppet.warning 'Registering node ... Error'
+        Puppet.err "Could not connect to host #{options[:enc_server]} on port #{options[:enc_port]}"
+        Puppet.err "This could be because a local host firewall is blocking the connection"
+        Puppet.err "Please check your --enc-server and --enc-port options"
+        ex = Puppet::Error.new(e)
+        ex.set_backtrace(e.backtrace)
+        raise ex
+      end
+      # Return the parsed JSON response
+      handle_json_response(response, action, expected_code)
+    end
+
+    def self.handle_json_response(response, action, expected_code='200')
+      if response.code == expected_code
+        Puppet.info "#{action} ... Done"
+        PSON.parse response.body
+      else
+        # I should probably raise an exception!
+        Puppet.warning "#{action} ... Failed"
+        Puppet.info("Body: #{response.body}")
+        Puppet.warning "Server responded with a #{response.code} status"
+        case response.code
+        when /401/
+          Puppet.notice "A 401 response is the HTTP code for an Unauthorized request"
+          Puppet.notice "This error likely means you need to supply the --enc-auth-user and --enc-auth-passwd options"
+          Puppet.notice "Alternatively set PUPPET_ENC_AUTH_PASSWD environment variable for increased security"
+        end
+        raise Puppet::Error, "Could not: #{action}, got #{response.code} expected #{expected_code}"
+      end
     end
 
     # regist all classes from a module in the dashboard
