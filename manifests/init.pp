@@ -63,7 +63,9 @@ class dashboard (
 ) inherits dashboard::params {
 
   class { 'mysql': }
-  class { 'mysql::server': root_password => $mysql_root_pw }
+  class { 'mysql::server':
+    config_hash => { 'root_password' => $mysql_root_pw }
+  }
   class { 'mysql::ruby':
     package_provider => $dashboard::params::mysql_package_provider,
     package_name     => $dashboard::params::ruby_mysql_package,
