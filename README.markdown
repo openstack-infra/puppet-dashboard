@@ -2,7 +2,7 @@
 
 Gary Larizza <gary@puppetlabs.com>
 
-This module manages and installs the Puppet Dashboard.
+This module manages and installs the Puppet Dashboard.  It also includes a Puppet Face to manage the Dashboard/Console programmatically or from the CLI
 
 # Quick Start
 
@@ -37,7 +37,7 @@ To use the Puppet Dashboard Face:
 
 * Ensure that you have Puppet 2.7.6 or greater installed.  This face MAY work on version 2.7.2 or later, but it's not been tested.
 * Download or clone puppetlabs-dashboard to your Puppet modulepath (i.e. ~/.puppet/modules or /etc/puppet/modules)
-        export RUBYLIB=/etc/puppet/modules/puppetlabs-dashboard/lib:$RUBYLIB
+        export RUBYLIB=/etc/puppet/modules/dashboard/lib:$RUBYLIB
 
 * Test the face and learn more about its usage
 
