@@ -116,8 +116,10 @@ class dashboard (
     -> Class['dashboard::passenger']
 
     class { 'dashboard::passenger':
-      dashboard_site => $dashboard_site,
-      dashboard_port => $dashboard_port,
+      dashboard_site   => $dashboard_site,
+      dashboard_port   => $dashboard_port,
+      dashboard_config => $dashboard_config,
+      dashboard_root   => $dashboard_root,
     }
 
   } else {
