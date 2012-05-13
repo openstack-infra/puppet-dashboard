@@ -96,7 +96,7 @@ class dashboard (
   $rack_version             = $dashboard::params::rack_version
 ) inherits dashboard::params {
 
-  class { 'mysql': }
+  include mysql
   class { 'mysql::server':
     config_hash => { 'root_password' => $mysql_root_pw }
   }
