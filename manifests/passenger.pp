@@ -15,15 +15,12 @@
 class dashboard::passenger (
   $dashboard_site,
   $dashboard_port,
-  $dashboard_config = $dashboard::params::dashboard_config
+  $dashboard_config = $dashboard::params::dashboard_config,
+  $dashboard_root   = $dashboard::params::dashboard_root,
 ) inherits dashboard {
 
-  Class ['::passenger']
-  -> Apache::Vhost[$dashboard_site]
-
-  class { '::passenger':
-    port    => $dashboard_port,
-  }
+  include apache
+  include passenger
 
   file { '/etc/init.d/puppet-dashboard':
     ensure => absent,
@@ -35,10 +32,10 @@ class dashboard::passenger (
   }
 
   apache::vhost { $dashboard_site:
-    port     => '8080',
+    port     => $dashboard_port,
     priority => '50',
-    docroot  => '/usr/share/puppet-dashboard/public',
-    template => 'dashboard/puppet-dashboard-passenger-vhost.erb',
+    docroot  => "${dashboard_root}/public",
+    template => 'dashboard/passenger-vhost.erb',
   }
 
 }
