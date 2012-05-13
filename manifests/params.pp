@@ -24,6 +24,7 @@ class dashboard::params {
   $passenger             = false
   $mysql_root_pw         = 'changemetoo'
   $rails_base_uri        = '/'
+  $rack_version          = '1.1.2'
 
   case $::osfamily {
 
@@ -49,5 +50,5 @@ class dashboard::params {
       fail("Unsupported osfamily: ${::osfamily} operatingsystem: ${::operatingsystem}, module ${module_name} only support osfamily RedHat and Debian")
     }
   }
-
 }
+

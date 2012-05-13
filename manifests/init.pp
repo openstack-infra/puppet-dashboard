@@ -121,7 +121,6 @@ class dashboard (
       dashboard_config => $dashboard_config,
       dashboard_root   => $dashboard_root,
     }
-
   } else {
     Class['mysql']
     -> Class['mysql::ruby']
@@ -153,7 +152,20 @@ class dashboard (
   }
 
   package { $dashboard_package:
-    ensure => $dashboard_version,
+    ensure  => $dashboard_version,
+    require => [ Package['rdoc'], Package['rack'] ],
+  }
+
+  # Currently, the dashboard requires this specific version
+  #  of the rack gem. Using the gem provider by default.
+  package { 'rack':
+    ensure   => $rack_version,
+    provider => 'gem',
+  }
+
+  package { ['rake', 'rdoc']:
+    ensure   => present,
+    provider => 'gem',
   }
 
   File {
@@ -217,6 +229,5 @@ class dashboard (
   group { $dashboard_group:
       ensure => 'present',
   }
-
 }
 
