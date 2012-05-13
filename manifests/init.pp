@@ -101,8 +101,8 @@ class dashboard (
     config_hash => { 'root_password' => $mysql_root_pw }
   }
   class { 'mysql::ruby':
-    package_provider => $dashboard::params::mysql_package_provider,
-    package_name     => $dashboard::params::ruby_mysql_package,
+    package_provider => $mysql_package_provider,
+    package_name     => $ruby_mysql_package,
   }
 
   if $passenger {
