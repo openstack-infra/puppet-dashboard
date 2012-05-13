@@ -151,7 +151,7 @@ class dashboard (
 
   file { '/etc/logrotate.d/puppet-dashboard':
     ensure  => present,
-    content => template('dashboard/puppet-dashboard.logrotate.erb'),
+    content => template('dashboard/logrotate.erb'),
     owner   => '0',
     group   => '0',
     mode    => '0644',
