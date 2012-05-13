@@ -20,8 +20,6 @@ To install the Puppet Dashboard and configure it with sane defaults, include the
 			     dashboard_port            => '8080',
 			     mysql_root_pw             => 'changemetoo',
 			     passenger                 => true,
-			     mysql_package_provider    => 'yum',
-		       ruby_mysql_package        => 'ruby-mysql',
 			   }
 		}
 
