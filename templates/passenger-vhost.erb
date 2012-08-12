@@ -1,6 +1,6 @@
-Listen <%= scope.lookupvar("dashboard::params::dashboard_port") %>
+Listen <%= dashboard_port %>
 
-<VirtualHost *:<%= scope.lookupvar("dashboard::params::dashboard_port") %>>
+<VirtualHost *:<%= dashboard_port %>>
   ServerName <%= name %>
   DocumentRoot <%= docroot %>
   RailsBaseURI <%= rails_base_uri %>
