@@ -24,7 +24,7 @@ class dashboard::params {
   $passenger             = false
   $mysql_root_pw         = 'changemetoo'
   $rails_base_uri        = '/'
-  $rack_version          = '1.1.2'
+  $rack_version          = '1.1.6'
 
   case $::osfamily {
 
