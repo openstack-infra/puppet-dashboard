@@ -1,5 +1,5 @@
 name 'openstackci-dashboard'
-version '0.0.6'
+version '0.0.7'
 source 'git://github.com/openstack-ci/puppet-dashboard.git'
 author 'openstackci'
 license 'Apache 2.0'
