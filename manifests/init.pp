@@ -156,6 +156,10 @@ class dashboard (
     require => [ Package['rdoc'], Package['rack'] ],
   }
 
+  package { 'rubygems':
+    ensure => present,
+  }
+
   # Currently, the dashboard requires this specific version
   #  of the rack gem. Using the gem provider by default.
   package { 'rack':
