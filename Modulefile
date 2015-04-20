@@ -1,4 +1,4 @@
-name 'openstackci-dashboard'
+name 'openstackinfra-dashboard'
 version '0.0.8'
 source 'git://git.openstack.org/openstack-infra/puppet-dashboard.git'
 author 'openstackci'
