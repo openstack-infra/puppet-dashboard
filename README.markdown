@@ -1,6 +1,13 @@
-# Puppet Dashboard Module
 
-Gary Larizza <gary@puppetlabs.com>
+
+THIS MODULE IS NO LONGER MAINTAINED
+===================================
+
+
+See #openstack-infra on freenode for details.
+
+
+# Puppet Dashboard Module
 
 This module manages and installs the Puppet Dashboard.  It also includes a Puppet Face to manage the Dashboard/Console programmatically or from the CLI
 
